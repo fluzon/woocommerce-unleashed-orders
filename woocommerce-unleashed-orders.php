@@ -20,10 +20,19 @@
   * Start at version 1.0.0 and use SemVer - https://semver.org
   * Rename this for your plugin and update it as you release new versions.
   */
- define( 'WC_UNLSH_ORDERS_VERSION', '1.0.0' );
+ define( 'WC_UNLSH_ORDERS_VERSION', '2.0' );
 
 register_activation_hook( __FILE__, 'WCUnleashedOrders_activate' );
 register_deactivation_hook( __FILE__, 'WCUnleashedOrders_deactivate' );
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'WCUnleashedOrders_add_action_links' );
+
+function WCUnleashedOrders_add_action_links ( $actions ) {
+   $mylinks = array(
+      '<a href="' . admin_url( 'admin.php?page=wc_unlsh_orders' ) . '">Settings</a>',
+   );
+   $actions = array_merge( $mylinks, $actions );
+   return $actions;
+}
 
 
 /**
@@ -61,6 +70,6 @@ function run_wc_unlsh_orders() {
 
 	$plugin = new WCUnlshOrder(true,'G.S.T.');
 	$plugin->run();
-
 }
+
 run_wc_unlsh_orders();

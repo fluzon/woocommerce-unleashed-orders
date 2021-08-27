@@ -162,16 +162,17 @@ class WCUnlshOrder_API_Handler {
 	public function enable_sandbox($sandbox = false) {
 
 			$this->sandbox = $sandbox;
+			$options = get_option( 'wc_unlsh_orders_options' );
 
 			if ($sandbox)
 			{
-				$this->api_id = '30f011b5-fce2-44e3-a419-f2c997864e69';
-				$this->api_secret = 'h4OFosOqCqvUm7p1UHLGgOLtnPeWkXAUNa5dhKEeVPV0h3FS7JV7FWgCypWzRexTnW9KsjRtSdQekOEdcw==';
+				$this->api_id = $options['test_api_id'];
+				$this->api_secret = $options['test_api_key'];
 			}
 			else
 			{
-				$this->api_id = '26c2eb54-eee8-4168-9bec-5b10a4203960';
-				$this->api_secret = 'ee0Czg9pXn6gh7JfDoz5Q5klxr4BO6staFbTed6H0028xVj34EjIisVG5NaKv2z50wX4knQ3rx8IP5hsJma1w==';
+				$this->api_id = $options['prod_api_id'];
+				$this->api_secret = $options['prod_api_key'];
 			}
 	}
 

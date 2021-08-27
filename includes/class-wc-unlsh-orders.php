@@ -121,6 +121,11 @@ class WCUnlshOrder {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wc-unlsh-orders-admin.php';
 
+		/**
+		 * The class responsible for defining all actions that occur in the admin area but for customers.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wc-unlsh-customers-admin.php';
+
 		$this->loader = new WCUnlshOrder_Loader();
 
 	}
@@ -135,9 +140,13 @@ class WCUnlshOrder {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new WCUnlshOrder_Admin( $this->get_plugin_name(), $this->get_version() , $this->unleashed);
+		$plugin_customer_admin = new WCUnlshCustomer_Admin( $this->get_plugin_name(), $this->get_version() , $this->unleashed);
 
-//		$this->loader->add_action( 'woocommerce_order_status_completed', $plugin_admin, 'log_order_status_id' );
 		$this->loader->add_action( 'woocommerce_order_status_completed', $plugin_admin, 'register_order_in_unleashed' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'settings_init' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_unleashed_options_page' );
+		$this->loader->add_filter( 'woocommerce_login_redirect', $plugin_customer_admin, 'add_unlsh_customer_code', 10, 2);
+
 
 	}
 

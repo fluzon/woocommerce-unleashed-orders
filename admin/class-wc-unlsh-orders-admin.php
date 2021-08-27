@@ -78,7 +78,10 @@ class WCUnlshOrder_Admin {
 		$this->unleashed = $unleashed;
 		$this->guid_customer = '';
 		$this->wc_order = null;
+
+
 	}
+
 
 	/**
 	 * Register Woocommerce completed order in Unleashed
@@ -345,4 +348,193 @@ class WCUnlshOrder_Admin {
 
 		return $tax_array;
 	}
+
+
+	/**
+	* Add the sub level menu page.
+	*/
+	public function add_unleashed_options_page() {
+		add_submenu_page(
+		    'options-general.php',
+		    'Unleashed Integration Settings',
+		    'Unleashed',
+		    'manage_options',
+		    'wc_unlsh_orders',
+		    'WCUnlshOrder_Admin::wc_unlsh_orders_options_page_html'
+		);
+	}
+
+
+	public function settings_init() {
+	  // Register a new setting for "wc_unlsh_orders" page.
+	  register_setting( 'wc_unlsh_orders', 'wc_unlsh_orders_options' );
+
+	  // Register a new section in the "Unleashed Integration Settings" page.
+	  add_settings_section(
+	      'test_api_credentials_section',
+	      __( 'Test API credentials', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::test_api_credentials_section_description',
+	      'wc_unlsh_orders'
+	  );
+
+	  // Register fields for "API Credentials" section,
+	  add_settings_field(
+	      'wc_unlsh_orders_test_api_id', // As of WP 4.6 this value is used only internally.
+	          __( 'Test API Id', 'wc_unlsh_orders' ),
+	      'WCUnlshOrder_Admin::wc_unlsh_orders_test_api_id',
+	      'wc_unlsh_orders',
+	      'test_api_credentials_section',
+	      array(
+	          'label_for'         => 'wc_unlsh_orders_field_test_api_id',
+	          'class'             => 'wc_unlsh_orders_row',
+	          'wc_unlsh_orders_custom_data' => 'custom',
+	      )
+	  );
+
+		add_settings_field(
+				'wc_unlsh_orders_test_api_key',
+						__( 'Test API Key', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::wc_unlsh_orders_test_api_key',
+				'wc_unlsh_orders',
+				'test_api_credentials_section',
+				array(
+						'label_for'         => 'wc_unlsh_orders_field_test_api_key',
+						'class'             => 'wc_unlsh_orders_row'
+				)
+		);
+
+
+
+		// Register Production API Credentials.
+	  add_settings_section(
+	      'prod_api_credentials_section',
+	      __( 'Production API credentials', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::prod_api_credentials_section_description',
+	      'wc_unlsh_orders'
+	  );
+
+		add_settings_field(
+				'wc_unlsh_orders_prod_api_id',
+						__( 'Production API Id', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::wc_unlsh_orders_prod_api_id',
+				'wc_unlsh_orders',
+				'prod_api_credentials_section',
+				array(
+						'label_for'         => 'wc_unlsh_orders_field_prod_api_id',
+						'class'             => 'wc_unlsh_orders_row'
+				)
+		);
+
+
+		add_settings_field(
+				'wc_unlsh_orders_prod_api_key',
+						__( 'Production API Key', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::wc_unlsh_orders_prod_api_key',
+				'wc_unlsh_orders',
+				'prod_api_credentials_section',
+				array(
+						'label_for'         => 'wc_unlsh_orders_field_prod_api_key',
+						'class'             => 'wc_unlsh_orders_row'
+				)
+		);
+
+	}
+
+	static function test_api_credentials_section_description(){
+		echo "Please enter the API credentials for testing mode";
+	}
+
+	static function prod_api_credentials_section_description(){
+		echo "Please enter the API credentials for production";
+	}
+
+	/**
+	* Sub level menu callback function
+	*/
+	static function wc_unlsh_orders_options_page_html() {
+		// check user capabilities
+		if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+		}
+
+		// show error/update messages
+		settings_errors( 'wc_unlsh_orders_messages' );
+		?>
+		<div class="wrap">
+				<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+				<form action="options.php" method="post">
+						<?php
+						// output security fields for the registered setting "wc_unlsh_orders"
+						settings_fields( 'wc_unlsh_orders' );
+						// output setting sections and their fields
+						// (sections are registered for "wporg", each field is registered to a specific section)
+						do_settings_sections( 'wc_unlsh_orders' );
+						// output save settings button
+						submit_button( 'Save Settings' );
+						?>
+				</form>
+		</div>
+		<?php
+	}
+
+
+	/**
+	* Test API Id render function.
+	*
+	* WordPress has magic interaction with the following keys: label_for, class.
+	* - the "label_for" key value is used for the "for" attribute of the <label>.
+	* - the "class" key value is used for the "class" attribute of the <tr> containing the field.
+	* Note: you can add custom key value pairs to be used inside your callbacks.
+	*
+	* @param array $args
+	*/
+	static function wc_unlsh_orders_test_api_id( $args ) {
+		// Get the value of the setting we've registered with register_setting()
+		$options = get_option( 'wc_unlsh_orders_options' );
+
+		echo '<input id="wc_unlsh_orders_test_api_id" name="wc_unlsh_orders_options[test_api_id]" size="51" type="text" value="' . $options['test_api_id'] . '"/><br/>';
+		echo '<p class="description">' . esc_html_e( 'Paste here the API Id for testing purposes', 'wc_unlsh_orders' ) . '</p>';
+	}
+
+	/**
+	* Test API Key render function.
+	*
+	* @param array $args
+	*/
+	static function wc_unlsh_orders_test_api_key( $args ) {
+		// Get the value of the setting we've registered with register_setting()
+		$options = get_option( 'wc_unlsh_orders_options' );
+
+		echo '<input id="wc_unlsh_orders_test_api_key" name="wc_unlsh_orders_options[test_api_key]" size="51" type="password" value="' . $options['test_api_key'] . '"/><br/>';
+		echo '<p class="description">' . esc_html_e( 'Paste here the API Key for testing purposes', 'wc_unlsh_orders' ) . '</p>';
+	}
+
+	/**
+	* Prod API Id render function.
+	*
+	* @param array $args
+	*/
+	static function wc_unlsh_orders_prod_api_id( $args ) {
+		// Get the value of the setting we've registered with register_setting()
+		$options = get_option( 'wc_unlsh_orders_options' );
+
+		echo '<input id="wc_unlsh_orders_prod_api_id" name="wc_unlsh_orders_options[prod_api_id]" size="51" type="text" value="' . $options['prod_api_id'] . '"/><br/>';
+		echo '<p class="description">' . esc_html_e( 'Paste here the API Id for production Unleashed account', 'wc_unlsh_orders' ) . '</p>';
+	}
+
+	/**
+	* Prod API Key render function.
+	*
+	* @param array $args
+	*/
+	static function wc_unlsh_orders_prod_api_key( $args ) {
+		// Get the value of the setting we've registered with register_setting()
+		$options = get_option( 'wc_unlsh_orders_options' );
+
+		echo '<input id="wc_unlsh_orders_prod_api_key" name="wc_unlsh_orders_options[prod_api_key]" size="51" type="password" value="' . $options['prod_api_key'] . '"/><br/>';
+		echo '<p class="description">' . esc_html_e( 'Paste here the API Key for production Unleashed account', 'wc_unlsh_orders' ) . '</p>';
+	}
+
+
+
 }
