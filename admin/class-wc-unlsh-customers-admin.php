@@ -127,4 +127,119 @@ class WCUnlshCustomer_Admin {
 	}
 
 
+
+	/**
+	 * Return an html special format when a regular price has a new price base on customer specific pricing
+	 *
+	 * @since    	1.0.0
+	 * @param     string    $price
+	 * @param     object    $product WooCommerce product object
+	 * @return 		string 		formatted price (if apply)
+	 */
+	public function get_price_html($price, $product)
+	{
+		$unlsh_customer_code = get_user_meta(get_current_user_id(),'unlsh_customer_code',true);
+
+		$regular_price = $product->get_regular_price();
+		$wqrmin = $product->get_meta('wqrmin');
+		$wqrmax = $product->get_meta('wqrmax');
+		$wqrdiscount_type = $product->get_meta('wqrdiscount_type');
+		$wqrdiscount = $product->get_meta('wqrdiscount');
+		$wqr_customer = $product->get_meta('wqr_customer');
+
+		$new_price = $this->get_price($unlsh_customer_code,
+		$regular_price, $wqrmin, $wqrmax, $wqrdiscount_type, $wqrdiscount, $wqr_customer);
+
+		if ($new_price < $regular_price)
+		{
+			return '<del aria-hidden="true">' . wc_price($regular_price) . '</del> <ins>' . wc_price( $new_price ) . '</ins>';
+		}
+
+		return wc_price($new_price);
+
+	}
+
+	/**
+	 * Return a new product price, only if customer is logged and if there a product discout for him that affects the current price.
+	 * otherwise return the current WooCommerce product price
+	 *
+	 * @since    	1.0.0
+	 * @param     float     current price
+	 * @param     int    		quantity
+	 * @param     object    $product WooCommerce product object
+	 * @return 		float 		new price (if apply)
+	 */
+	public static function get_price($unlsh_customer_code, $regular_price, $wqrmin, $wqrmax, $wqrdiscount_type, $wqrdiscount, $wqr_customer)
+	{
+		$i = 0;
+		$new_price_not_logged_user = $regular_price;
+		$new_price_logged_user = $regular_price;
+
+		if (is_array($wqrmin))
+		{
+			if (empty($unlsh_customer_code))
+			{
+				while($i<count($wqrmin))
+				{
+					if (intval($wqrmin[$i])<=1 && empty($wqr_customer[$i]))
+					{
+						return self::calculate_price($regular_price, $wqrdiscount_type[$i], $wqrdiscount[$i]);
+					}
+
+					$i++;
+				}
+
+			}
+			else
+			{
+				while($i<count($wqrmin))
+				{
+					if (intval($wqrmin[$i])<=1 && empty($wqr_customer[$i]))
+					{
+						$new_price_not_logged_user = self::calculate_price($regular_price, $wqrdiscount_type[$i], $wqrdiscount[$i]);
+					}
+					else if (intval($wqrmin[$i])<=1 && $wqr_customer[$i]==$unlsh_customer_code)
+					{
+						$new_price_logged_user = self::calculate_price($regular_price, $wqrdiscount_type[$i], $wqrdiscount[$i]);
+						break;
+					}
+
+					$i++;
+				}
+				return ($new_price_logged_user < $new_price_not_logged_user) ? $new_price_logged_user : $new_price_not_logged_user;
+
+			}
+
+
+		}
+
+		return $regular_price;
+
+	}
+
+
+	/**
+	 * Return a float number representing the price calcuated depending if is a percentage o fixed type
+	 *
+	 * @since    	1.0.0
+	 * @param     float    regular price
+	 * @param     string   'percentage' or 'fixe'
+	 * @param     float    amount of percentage to discount of fixed amount to discount
+	 * @return 		float 	 calculated price
+	 */
+	private static function calculate_price($regular_price, $wqrdiscount_type, $wqrdiscount)
+	{
+
+		if($wqrdiscount_type == 'percentage')
+		{
+			return $regular_price * ((100-$wqrdiscount)/100);
+		}
+		else
+		{
+			return $wqrdiscount;
+		}
+
+	}
+
+
 }

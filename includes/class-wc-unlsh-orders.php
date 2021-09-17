@@ -146,6 +146,7 @@ class WCUnlshOrder {
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'settings_init' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_unleashed_options_page' );
 		$this->loader->add_filter( 'woocommerce_login_redirect', $plugin_customer_admin, 'add_unlsh_customer_code', 10, 2);
+		$this->loader->add_filter( 'woocommerce_get_price_html', $plugin_customer_admin, 'get_price_html', 10, 3);
 
 
 	}
