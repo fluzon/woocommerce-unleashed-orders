@@ -68,7 +68,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-wc-unlsh-orders.php';
  */
 function run_wc_unlsh_orders() {
 
-	$plugin = new WCUnlshOrder(true,'G.S.T.');
+	$plugin = new WCUnlshOrder('G.S.T.');
 	$plugin->run();
 }
 

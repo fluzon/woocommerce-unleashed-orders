@@ -21,15 +21,6 @@
 class WCUnlshOrder_API_Handler {
 
 	/**
-	 * The variable to set calls to Unleashed Sandbox environment.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      boolean    $sandbox    True if using sandbox account, false otherwise
-	 */
-	protected $sandbox;
-
-	/**
 	 * Save the base url for Unleashed API
 	 *
 	 * @since    1.0.0
@@ -70,11 +61,11 @@ class WCUnlshOrder_API_Handler {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct($enable_sandbox = false, $tax_code) {
+	public function __construct($tax_code) {
 
-		$this->enable_sandbox($enable_sandbox);
 		$this->base_url = 'https://api.unleashedsoftware.com/';
 		$this->tax_code = $tax_code;
+		$this->get_credentials();
 	}
 
 	/**
@@ -159,21 +150,12 @@ class WCUnlshOrder_API_Handler {
 	 * @since    1.0.0
 	 * @param      string    $query_params   query parameter portion of the API call
 	 */
-	public function enable_sandbox($sandbox = false) {
+	public function get_credentials() {
 
-			$this->sandbox = $sandbox;
 			$options = get_option( 'wc_unlsh_orders_options' );
 
-			if ($sandbox)
-			{
-				$this->api_id = $options['test_api_id'];
-				$this->api_secret = $options['test_api_key'];
-			}
-			else
-			{
-				$this->api_id = $options['prod_api_id'];
-				$this->api_secret = $options['prod_api_key'];
-			}
+			$this->api_id = $options['unlsh_api_id'];
+			$this->api_secret = $options['unlsh_api_key'];
 	}
 
 
