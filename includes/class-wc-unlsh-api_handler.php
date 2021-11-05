@@ -61,11 +61,10 @@ class WCUnlshOrder_API_Handler {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct($tax_code) {
+	public function __construct() {
 
 		$this->base_url = 'https://api.unleashedsoftware.com/';
-		$this->tax_code = $tax_code;
-		$this->get_credentials();
+		$this->get_settings();
 	}
 
 	/**
@@ -126,19 +125,19 @@ class WCUnlshOrder_API_Handler {
 	 * @param     string   $query_params parameter portion of the API call
 	 * @return   array
 	 */
-	public function post_request($end_point, $body) {
+	public function post_request($end_point, $query_params = '', $body) {
 		$request_args = array(
 					'headers' => array(
 						'Content-Type' => 'application/json',
 						'api-auth-id' => $this->api_id,
-						'api-auth-signature' => $this->get_signature(''),
+						'api-auth-signature' => $this->get_signature($query_params),
 						'client-type' => 'jaibasoft',
 						'Accept' => 'application/json'
 
 					),
 					'body' => $body);
 
-		$request = $this->base_url . $end_point;
+		$request = $this->base_url . $end_point . $query_params;
 
 		return wp_remote_post($request, $request_args);
 
@@ -150,12 +149,13 @@ class WCUnlshOrder_API_Handler {
 	 * @since    1.0.0
 	 * @param      string    $query_params   query parameter portion of the API call
 	 */
-	public function get_credentials() {
+	public function get_settings() {
 
 			$options = get_option( 'wc_unlsh_orders_options' );
 
 			$this->api_id = $options['unlsh_api_id'];
 			$this->api_secret = $options['unlsh_api_key'];
+			$this->tax_code = $options['unlsh_tax_code'];
 	}
 
 

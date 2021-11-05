@@ -72,7 +72,7 @@ class WCUnlshOrder {
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct($tax_code) {
+	public function __construct() {
 		if ( defined( 'WC_UNLSH_ORDERS_VERSION' ) ) {
 			$this->version = WC_UNLSH_ORDERS_VERSION;
 		} else {
@@ -80,7 +80,7 @@ class WCUnlshOrder {
 		}
 		$this->plugin_name = 'wc-unlsh-orders';
 
-		$this->load_dependencies($tax_code);
+		$this->load_dependencies();
 		$this->define_admin_hooks();
 
 	}
@@ -101,7 +101,7 @@ class WCUnlshOrder {
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function load_dependencies($tax_code) {
+	private function load_dependencies() {
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
@@ -114,7 +114,7 @@ class WCUnlshOrder {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-unlsh-api_handler.php';
 
-		$this->unleashed = new WCUnlshOrder_API_Handler($tax_code);
+		$this->unleashed = new WCUnlshOrder_API_Handler();
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.

@@ -224,7 +224,7 @@ class WCUnlshOrder_Admin {
 			'ContactLastName' => $last_name
 		);
 
-		$response = $this->unleashed->post_request($request, json_encode($body));
+		$response = $this->unleashed->post_request($request,'', json_encode($body));
 		$http_code = $this->unleashed->get_http_response_code( $response );
 		$json_response = $this->unleashed->get_response_body($response);
 
@@ -249,29 +249,27 @@ class WCUnlshOrder_Admin {
 	public function create_unleashed_sales_order($order_data) {
 
 		$sales_order_lines_array = $this->create_sales_order_lines_array($order_data);
-		$tax_array = $this->create_tax_array($order_data);
-
+		$tax_array = $this->create_tax_array();
+		
 		//order array
 		$guid = $this->unleashed->create_guid();
 
-
-		$request = 'SalesOrders/' . $guid;
-
+		$request = 'SalesOrders/' . $guid . '?';
+		$query_params = 'taxInclusive=true';
 		$order_array = array(
 			'SalesOrderLines' => $sales_order_lines_array,
 			'OrderStatus' => 'Placed',
 			'Customer' => array('Guid' => $this->guid_customer),
 			'Tax' => $tax_array,
-			'TaxRate' => 0.000000,
-			'XeroTaxCode' => 'NONE',
+			//'TaxRate' => 0.000000,
+			//'XeroTaxCode' => 'NONE',
 			'SubTotal' => ($order_data['total'] - $order_data['total_tax']),
 			'TaxTotal' => $order_data['total_tax'],
 			'Total' => $order_data['total'],
 			'Guid' => $guid
 		);
 
-
-		$response = $this->unleashed->post_request($request, json_encode($order_array));
+		$response = $this->unleashed->post_request($request, $query_params, json_encode($order_array));
 		$http_code = $this->unleashed->get_http_response_code( $response );
 		$json_response = $this->unleashed->get_response_body($response);
 
@@ -279,6 +277,7 @@ class WCUnlshOrder_Admin {
 			//if response is OK, than retrieve data
 			//and save it in meta order data
 			$this->update_metadata(true,$json_response->OrderNumber);
+
 		}
 		else
 		{
@@ -316,7 +315,7 @@ class WCUnlshOrder_Admin {
 				'OrderQuantity' => $order_line_item->get_quantity(),
 				'UnitPrice' => $product->get_price(),
 				'DiscountRate' => 0.0000,
-				'LineTotal' => $order_line_item->get_total(),
+				'LineTotal' => round($product->get_price() * $order_line_item->get_quantity(),2),
 				'LineTax' => $order_line_item->get_subtotal_tax(),
 				'LineTaxCode' => null,
 				'Guid' => $this->unleashed->create_guid()
@@ -339,7 +338,7 @@ class WCUnlshOrder_Admin {
 	 * @param     array    $order_data    Woocommerce order data
 	 * @return		array
 	 */
-	public function create_tax_array($order_data) {
+	public function create_tax_array() {
 
 		$tax_array = array(
 			'TaxCode' => $this->unleashed->get_tax_code()
@@ -370,7 +369,7 @@ class WCUnlshOrder_Admin {
 
 	  // Register a new section in the "Unleashed Integration Settings" page.
 	  add_settings_section(
-	      'test_api_credentials_section',
+	      'unlsh_api_credentials_section',
 	      __( 'Unleashed API credentials', 'wc_unlsh_orders' ),
 				'WCUnlshOrder_Admin::unlsh_api_credentials_section_description',
 	      'wc_unlsh_orders'
@@ -382,7 +381,7 @@ class WCUnlshOrder_Admin {
 	          __( 'API Id', 'wc_unlsh_orders' ),
 	      'WCUnlshOrder_Admin::wc_unlsh_orders_unlsh_api_id',
 	      'wc_unlsh_orders',
-	      'test_api_credentials_section',
+	      'unlsh_api_credentials_section',
 	      array(
 	          'label_for'         => 'wc_unlsh_orders_field_unlsh_api_id',
 	          'class'             => 'wc_unlsh_orders_row',
@@ -395,9 +394,21 @@ class WCUnlshOrder_Admin {
 						__( 'API Key', 'wc_unlsh_orders' ),
 				'WCUnlshOrder_Admin::wc_unlsh_orders_unlsh_api_key',
 				'wc_unlsh_orders',
-				'test_api_credentials_section',
+				'unlsh_api_credentials_section',
 				array(
 						'label_for'         => 'wc_unlsh_orders_field_unlsh_api_key',
+						'class'             => 'wc_unlsh_orders_row'
+				)
+		);
+
+		add_settings_field(
+				'wc_unlsh_orders_unlsh_tax_code',
+						__( 'Tax Code', 'wc_unlsh_orders' ),
+				'WCUnlshOrder_Admin::wc_unlsh_orders_unlsh_tax_code',
+				'wc_unlsh_orders',
+				'unlsh_api_credentials_section',
+				array(
+						'label_for'         => 'wc_unlsh_orders_field_unlsh_tax_code',
 						'class'             => 'wc_unlsh_orders_row'
 				)
 		);
@@ -469,6 +480,18 @@ class WCUnlshOrder_Admin {
 		echo '<p class="description">' . esc_html_e( 'Paste here the API Key', 'wc_unlsh_orders' ) . '</p>';
 	}
 
+	/**
+	* Tax Code Field render function.
+	*
+	* @param array $args
+	*/
+	static function wc_unlsh_orders_unlsh_tax_code( $args ) {
+		// Get the value of the setting we've registered with register_setting()
+		$options = get_option( 'wc_unlsh_orders_options' );
+
+		echo '<input id="wc_unlsh_orders_unlsh_tax_code" name="wc_unlsh_orders_options[unlsh_tax_code]" size="10" type="text" value="' . $options['unlsh_tax_code'] . '"/><br/>';
+		echo '<p class="description">' . esc_html_e( 'Unleashed Tax Code for Sales Orders', 'wc_unlsh_orders' ) . '</p>';
+	}
 
 
 
