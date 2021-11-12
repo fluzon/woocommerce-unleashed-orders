@@ -167,33 +167,19 @@ class WCUnlshOrder_Admin {
 	 */
 	public function unleashed_customer_exists($user_email) {
 
-		$request = 'Customers?';
-		$query_params = 'contactEmail=' . $user_email;
+		global $wpdb;
+		$results = $wpdb->get_results( "SELECT customer_code, customer_guid FROM `contacts_data` WHERE contact_email = '" . $user_email . "' ", OBJECT );
 
-		$response = $this->unleashed->call_get_request($request, $query_params);
-		$http_code = $this->unleashed->get_http_response_code( $response );
-		$json_response = $this->unleashed->get_response_body( $response );
-
-		if ($http_code == 200) {
-			//if response is OK, than retrieve data
-
-			if (empty($json_response->Items))
-			{
-				//customer doesn't exists
-				return false;
-			}
-			else
-			{
-				//initialize customer guid
-				$this->guid_customer = $json_response->Items[0]->Guid;
-				return true;
-			}
+		if (!empty($results[0]))
+		{
+			$this->guid_customer = $results[0]->customer_guid;
+			return true;
 		}
-		else {
-			$this->update_metadata(false,'Unable to check if customer exists in Unleashed. Response code: ' . $http_code);
-			error_log('Unable to check if customer exists in Unleashed. Response code: ' . $http_code);
-			error_log('Response Body ' . print_r(json_encode($json_response),true));
-		}
+
+		//customer doesn't exists
+		error_log("Email: $user_email was not found as contact when trying to complete order.");
+		return false;
+
 	}
 
 	/**
@@ -250,7 +236,7 @@ class WCUnlshOrder_Admin {
 
 		$sales_order_lines_array = $this->create_sales_order_lines_array($order_data);
 		$tax_array = $this->create_tax_array();
-		
+
 		//order array
 		$guid = $this->unleashed->create_guid();
 

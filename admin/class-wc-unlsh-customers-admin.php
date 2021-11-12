@@ -106,22 +106,15 @@ class WCUnlshCustomer_Admin {
 	 */
 	protected function get_unlsh_customer_code($user_email) {
 
-		$request = 'Customers?';
-		$query_params = 'contactEmail=' . $user_email;
+		global $wpdb;
+		$results = $wpdb->get_results( "SELECT customer_code FROM `contacts_data` WHERE contact_email = '" . $user_email . "' ", OBJECT );
 
-		$response = $this->unleashed->call_get_request($request, $query_params);
-		$http_code = $this->unleashed->get_http_response_code( $response );
-		$json_response = $this->unleashed->get_response_body( $response );
-
-		if ($http_code == 200)
+		if (!empty($results[0]))
 		{
-			//if response is OK, than retrieve data
-			return (empty($json_response->Items)) ? '' : $json_response->Items[0]->CustomerCode;
+			return $results[0]->customer_code;
 		}
 
-		error_log('Unable to check if customer exists in Unleashed. Response code: ' . $http_code);
-		error_log('Response Body ' . print_r(json_encode($json_response),true));
-
+		error_log("Email: $user_email was not found as contact when login.");
 		return '';
 
 	}
