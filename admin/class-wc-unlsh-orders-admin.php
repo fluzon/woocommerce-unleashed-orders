@@ -233,7 +233,6 @@ class WCUnlshOrder_Admin {
 	 * @param      string    $user_email       The email address of the buyer in Woocommerce.
 	 */
 	public function create_unleashed_sales_order($order_data) {
-
 		$sales_order_lines_array = $this->create_sales_order_lines_array($order_data);
 		$tax_array = $this->create_tax_array();
 
@@ -247,8 +246,7 @@ class WCUnlshOrder_Admin {
 			'OrderStatus' => 'Placed',
 			'Customer' => array('Guid' => $this->guid_customer),
 			'Tax' => $tax_array,
-			//'TaxRate' => 0.000000,
-			//'XeroTaxCode' => 'NONE',
+			'CustomerRef' => $order_data['payment_method_title'],
 			'SubTotal' => ($order_data['total'] - $order_data['total_tax']),
 			'TaxTotal' => $order_data['total_tax'],
 			'Total' => $order_data['total'],
