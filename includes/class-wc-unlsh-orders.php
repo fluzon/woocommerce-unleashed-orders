@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * The class responsible for defining all actions and filters for Checkout page.
+ */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wc-unlsh-orders-checkout.php';
+
+/**
  * The file that defines the core plugin class
  *
  * A class definition that includes attributes and functions used across both the
@@ -141,6 +146,7 @@ class WCUnlshOrder {
 
 		$plugin_admin = new WCUnlshOrder_Admin( $this->get_plugin_name(), $this->get_version() , $this->unleashed);
 		$plugin_customer_admin = new WCUnlshCustomer_Admin( $this->get_plugin_name(), $this->get_version() , $this->unleashed);
+		$checkout_page = new WCUnlshCheckout();
 
 		$this->loader->add_action( 'woocommerce_order_status_completed', $plugin_admin, 'register_order_in_unleashed' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'settings_init' );
@@ -148,6 +154,9 @@ class WCUnlshOrder {
 		$this->loader->add_filter( 'woocommerce_login_redirect', $plugin_customer_admin, 'add_unlsh_customer_code', 10, 2);
 		$this->loader->add_filter( 'woocommerce_get_price_html', $plugin_customer_admin, 'get_price_html', 10, 3);
 
+		$this->loader->add_filter( 'woocommerce_gateway_description', $checkout_page, 'gateway_bacs_custom_fields', 20, 2);
+		$this->loader->add_action( 'woocommerce_checkout_process', $checkout_page, 'purchase_order_number_checkout_field_validation');
+		$this->loader->add_action( 'woocommerce_checkout_create_order', $checkout_page, 'save_purchase_order_number', 10, 2);
 
 	}
 

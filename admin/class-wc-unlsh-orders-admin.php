@@ -1,4 +1,8 @@
 <?php
+/**
+* The class responsible for definig a Sales Order model
+ */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-wc-unlsh-orders-sales-order.php';
 
 /**
  * The admin-specific functionality of the plugin.
@@ -65,11 +69,22 @@ class WCUnlshOrder_Admin {
 	private $wc_order;
 
 	/**
+	 * Sales Order model
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      object    $obj_sales_order   Sales Order model object
+	 */
+	private $obj_sales_order;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
+	 * @param      object    $unleashed
+	 * @param      object    $obj_sales_order Sales Order.
 	 */
 	public function __construct( $plugin_name, $version, $unleashed ) {
 
@@ -78,7 +93,6 @@ class WCUnlshOrder_Admin {
 		$this->unleashed = $unleashed;
 		$this->guid_customer = '';
 		$this->wc_order = null;
-
 
 	}
 
@@ -233,23 +247,28 @@ class WCUnlshOrder_Admin {
 	 * @param      string    $user_email       The email address of the buyer in Woocommerce.
 	 */
 	public function create_unleashed_sales_order($order_data) {
-		$sales_order_lines_array = $this->create_sales_order_lines_array($order_data);
-		$tax_array = $this->create_tax_array();
+		$sales_order = new WCUnlshSalesOrder($order_data, WC()->countries);
 
 		//order array
-		$guid = $this->unleashed->create_guid();
+		$guid = $sales_order->getGUID();
 
 		$request = 'SalesOrders/' . $guid . '?';
 		$query_params = 'taxInclusive=true';
 		$order_array = array(
-			'SalesOrderLines' => $sales_order_lines_array,
-			'OrderStatus' => 'Placed',
-			'Customer' => array('Guid' => $this->guid_customer),
-			'Tax' => $tax_array,
-			'CustomerRef' => $order_data['payment_method_title'],
-			'SubTotal' => ($order_data['total'] - $order_data['total_tax']),
-			'TaxTotal' => $order_data['total_tax'],
-			'Total' => $order_data['total'],
+			'SalesOrderLines' => $sales_order->getLines(),
+			'OrderStatus' => $sales_order->getInitStatus(),
+			'Customer' => $sales_order->getCustomer($this->guid_customer),
+			'Tax' => $sales_order->getTax($this->unleashed->get_tax_code()),
+			'CustomerRef' => $sales_order->getCustomerRef(),
+			'SubTotal' => $sales_order->getSubTotal(),
+			'TaxTotal' => $sales_order->getTaxTotal(),
+			'Total' => $sales_order->getTotal(),
+			'DeliveryStreetAddress' => $sales_order->getDeliveryStreetAddress(),
+			'DeliverySuburb' => $sales_order->getDeliverySuburb(),
+			'DeliveryCity' => $sales_order->getDeliveryCity(),
+			'DeliveryRegion' => $sales_order->getDeliveryRegion(),
+			'DeliveryCountry' => $sales_order->getDeliveryCountry(),
+			'DeliveryPostCode' => $sales_order->getDeliveryPostCode(),
 			'Guid' => $guid
 		);
 
@@ -272,63 +291,6 @@ class WCUnlshOrder_Admin {
 			error_log('Order POST Request: ' . print_r(json_encode($order_array),true));
 		}
 
-	}
-
-	/**
-	 * Create sales order lines array for Unleashed API.
-	 *
-	 * @since    1.0.0
-	 * @param     array    $order_data    Woocommerce order data
-	 * @return		array
-	 */
-	public function create_sales_order_lines_array($order_data) {
-
-		$lines_array = array();
-		$line_number = 1;
-
-		foreach ($order_data['line_items'] as $key => $order_line_item) {
-
-
-			//get product GUID
-			$product = $order_line_item->get_product();
-			$product_guid = $product->get_meta('_guid');
-			$line = array(
-				'LineNumber' => $line_number,
-				'LineType' => null,
-				'Product' => array('Guid' => $product_guid),
-				'OrderQuantity' => $order_line_item->get_quantity(),
-				'UnitPrice' => $product->get_price(),
-				'DiscountRate' => 0.0000,
-				'LineTotal' => round($product->get_price() * $order_line_item->get_quantity(),2),
-				'LineTax' => $order_line_item->get_subtotal_tax(),
-				'LineTaxCode' => null,
-				'Guid' => $this->unleashed->create_guid()
-			);
-
-			$lines_array[] = $line;
-			$line_number++;
-
-		}
-
-
-
-		return $lines_array;
-	}
-
-	/**
-	* Create sales order lines array for Unleashed API.
-	 *
-	 * @since    1.0.0
-	 * @param     array    $order_data    Woocommerce order data
-	 * @return		array
-	 */
-	public function create_tax_array() {
-
-		$tax_array = array(
-			'TaxCode' => $this->unleashed->get_tax_code()
-		);
-
-		return $tax_array;
 	}
 
 
