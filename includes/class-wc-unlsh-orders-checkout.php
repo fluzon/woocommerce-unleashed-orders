@@ -9,6 +9,51 @@
  */
 class WCUnlshCheckout {
 
+	function delivery_method_field($checkout)
+	{
+
+	  echo '<div id="delivery_options"><h3>' . __('Delivery Options') . '</h3>';
+
+	    woocommerce_form_field( 'delivery_method', array(
+	        'type'          => 'select',
+	        'class'         => array( 'select' ),
+	        'required'  => true,
+	        'label'         => __('Delivery method'),
+	        'options'       => array(
+		    	''		=> '',
+		        'pickup'	=> __( 'Pickup'),
+		        'delivery'	=> __( 'Delivery'),
+	          ),
+	        ), $checkout->get_value( 'delivery_method' ));
+
+	    echo '</div>';
+
+	}
+
+	/**
+	 * Validate Delivery Method in Checkout Page
+	 *
+	 */
+	public function delivery_method_field_validation() {
+		if ( isset($_POST['delivery_method']) && empty($_POST['delivery_method']))
+		{
+			error_log('Isset delivery_method');
+			wc_add_notice( __( 'Please select the delivery method.' ), 'error' );
+		}
+
+	}
+
+
+	/**
+	 * Save Purchase Delivery Method in Order Meta data
+	 *
+	 */
+	public function save_delivery_method( $order, $data ) {
+	    if( isset( $_POST['delivery_method'] ) ) {
+	        $order->update_meta_data( 'delivery_method', sanitize_text_field( $_POST['delivery_method'] ) );
+	    }
+	}
+
 	/**
 	 * Display Purchase Order Number in Checkout Page
 	 *

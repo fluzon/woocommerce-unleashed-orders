@@ -158,6 +158,10 @@ class WCUnlshOrder {
 		$this->loader->add_action( 'woocommerce_checkout_process', $checkout_page, 'purchase_order_number_checkout_field_validation');
 		$this->loader->add_action( 'woocommerce_checkout_create_order', $checkout_page, 'save_purchase_order_number', 10, 2);
 
+		$this->loader->add_filter( 'woocommerce_after_checkout_billing_form', $checkout_page, 'delivery_method_field', 20, 1);
+		$this->loader->add_action( 'woocommerce_checkout_process', $checkout_page, 'delivery_method_field_validation');
+		$this->loader->add_action( 'woocommerce_checkout_create_order', $checkout_page, 'save_delivery_method', 10, 2);
+
 	}
 
 

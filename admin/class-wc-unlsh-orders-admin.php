@@ -251,7 +251,7 @@ class WCUnlshOrder_Admin {
 
 		//order array
 		$guid = $sales_order->getGUID();
-
+error_log('getDeliveryMethod: ' . $sales_order->getDeliveryMethod());
 		$request = 'SalesOrders/' . $guid . '?';
 		$query_params = 'taxInclusive=true';
 		$order_array = array(
@@ -269,6 +269,7 @@ class WCUnlshOrder_Admin {
 			'DeliveryRegion' => $sales_order->getDeliveryRegion(),
 			'DeliveryCountry' => $sales_order->getDeliveryCountry(),
 			'DeliveryPostCode' => $sales_order->getDeliveryPostCode(),
+			'DeliveryMethod' => $sales_order->getDeliveryMethod(),
 			'Guid' => $guid
 		);
 

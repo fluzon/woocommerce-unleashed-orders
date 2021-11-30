@@ -92,6 +92,15 @@ class WCUnlshSalesOrder {
 	}
 
 	/**
+	 * Returns Delivery Method
+	 */
+	public function getDeliveryMethod(){
+		$delivery_method = get_post_meta($this->wc_order_data['id'],'delivery_method',true);
+
+		return $delivery_method;
+ 	}
+
+	/**
 	 * Returns Sub Total
 	 */
 	public function getSubTotal(){
@@ -184,7 +193,7 @@ class WCUnlshSalesOrder {
 	public function getCustomerRef(){
 		$purchase_order_number = get_post_meta($this->wc_order_data['id'],'purchase_order_number',true);
 
-		return !empty($purchase_order_number) ? 'PO-' . $purchase_order_number : '';
+		return !empty($purchase_order_number) ? $purchase_order_number : '';
 	}
 
 
