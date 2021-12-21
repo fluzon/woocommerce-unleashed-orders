@@ -161,19 +161,22 @@ class WCUnlshSalesOrder {
 		$line_number = 1;
 
 		foreach ($this->wc_order_data['line_items'] as $key => $order_line_item) {
-
-
 			//get product GUID
 			$product = $order_line_item->get_product();
 			$product_guid = $product->get_meta('_guid');
+
+			//calculate discount rate
+			$product_final_price = $order_line_item->get_subtotal() / $order_line_item->get_quantity();
+
 			$line = array(
 				'LineNumber' => $line_number,
 				'LineType' => null,
 				'Product' => array('Guid' => $product_guid),
 				'OrderQuantity' => $order_line_item->get_quantity(),
-				'UnitPrice' => $product->get_price(),
-				'DiscountRate' => 0.0000,
-				'LineTotal' => round($product->get_price() * $order_line_item->get_quantity(),2),
+				'BCUnitPrice' => $product->get_price(),
+				'UnitPrice' => $product_final_price,
+				'DiscountRate' => 0.000,
+				'LineTotal' => round($product_final_price * $order_line_item->get_quantity(),2),
 				'LineTax' => $order_line_item->get_subtotal_tax(),
 				'LineTaxCode' => null,
 				'Guid' => $this->create_guid()

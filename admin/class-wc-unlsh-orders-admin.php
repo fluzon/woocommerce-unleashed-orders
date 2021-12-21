@@ -251,7 +251,6 @@ class WCUnlshOrder_Admin {
 
 		//order array
 		$guid = $sales_order->getGUID();
-error_log('getDeliveryMethod: ' . $sales_order->getDeliveryMethod());
 		$request = 'SalesOrders/' . $guid . '?';
 		$query_params = 'taxInclusive=true';
 		$order_array = array(
@@ -272,6 +271,7 @@ error_log('getDeliveryMethod: ' . $sales_order->getDeliveryMethod());
 			'DeliveryMethod' => $sales_order->getDeliveryMethod(),
 			'Guid' => $guid
 		);
+
 
 		$response = $this->unleashed->post_request($request, $query_params, json_encode($order_array));
 		$http_code = $this->unleashed->get_http_response_code( $response );
