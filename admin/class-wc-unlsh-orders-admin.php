@@ -5,6 +5,17 @@
 require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-wc-unlsh-orders-sales-order.php';
 
 /**
+* The class responsible for definig a Contact model
+ */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-wc-unlsh-contact.php';
+
+/**
+* The class responsible for definig a Contact Admin class
+ */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . '/admin/class-wc-unlsh-contact-admin.php';
+
+
+/**
  * The admin-specific functionality of the plugin.
  *
  * @since      1.0.0
@@ -121,6 +132,12 @@ class WCUnlshOrder_Admin {
 				{
 					//if customer is not registered, then create it in Unleashed
 					$this->create_unleashed_customer($order_data);
+
+					//create contact in local database
+					$contact = new WCUnlshContact($order_data, $this->guid_customer, $user_email);
+					$contact_admin = new WCUnlshContact_Admin($this->plugin_name, $this->version, $this->unleashed);
+					$contact_admin->add_contact($contact);
+
 				}
 
 				//customer guid must be set at this point, execution must continue only when customer GUID was found
@@ -249,6 +266,8 @@ class WCUnlshOrder_Admin {
 	public function create_unleashed_sales_order($order_data) {
 		$sales_order = new WCUnlshSalesOrder($order_data, WC()->countries);
 
+		error_log('ORDER DATA: ' . print_r($order_data,true));
+
 		//order array
 		$guid = $sales_order->getGUID();
 		$request = 'SalesOrders/' . $guid . '?';
@@ -269,6 +288,7 @@ class WCUnlshOrder_Admin {
 			'DeliveryCountry' => $sales_order->getDeliveryCountry(),
 			'DeliveryPostCode' => $sales_order->getDeliveryPostCode(),
 			'DeliveryMethod' => $sales_order->getDeliveryMethod(),
+			'DeliveryInstruction' => $sales_order->getDeliveryInstruction(),
 			'Guid' => $guid
 		);
 
@@ -288,7 +308,6 @@ class WCUnlshOrder_Admin {
 			$this->update_metadata(false,'Unable to create order in Unleashed. Response code: ' . $http_code);
 			error_log('Unable to create order in Unleashed. Response code: ' . $http_code);
 			error_log('Response Body ' . print_r(json_encode($json_response),true));
-			error_log('Woocommerce Order Data: ' . print_r($order_data,true));
 			error_log('Order POST Request: ' . print_r(json_encode($order_array),true));
 		}
 

@@ -100,6 +100,15 @@ class WCUnlshSalesOrder {
 		return $delivery_method;
  	}
 
+
+	/**
+	 * Returns Delivery Intruction
+	 */
+	public function getDeliveryInstruction(){
+
+		return !empty($this->wc_order_data['customer_note']) ? $this->wc_order_data['customer_note'] : '';
+	}
+
 	/**
 	 * Returns Sub Total
 	 */
