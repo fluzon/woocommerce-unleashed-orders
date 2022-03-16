@@ -266,8 +266,6 @@ class WCUnlshOrder_Admin {
 	public function create_unleashed_sales_order($order_data) {
 		$sales_order = new WCUnlshSalesOrder($order_data, WC()->countries);
 
-		error_log('ORDER DATA: ' . print_r($order_data,true));
-
 		//order array
 		$guid = $sales_order->getGUID();
 		$request = 'SalesOrders/' . $guid . '?';

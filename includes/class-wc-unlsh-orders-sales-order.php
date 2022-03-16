@@ -54,7 +54,6 @@ class WCUnlshSalesOrder {
 	public function getDeliveryCountry(){
 		$country_id = !empty($this->wc_order_data['shipping']['country']) ? $this->wc_order_data['shipping']['country'] : $this->wc_order_data['billing']['country'];
 
-		error_log(print_r($this->wc_countries->countries,true));
 		return $this->wc_countries->countries[ $country_id ];
 	}
 
